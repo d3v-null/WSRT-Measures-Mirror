@@ -10,13 +10,20 @@ jobs:
       - name: Get Measures
         run: |
           wget ftp://ftp.astron.nl/outgoing/Measures/WSRT_Measures.ztar -O WSRT_Measures.ztar
-          tar zxvf WSRT_Measures.ztar
-      - name: Get current date
+          tar -zxvf WSRT_Measures.ztar
+      - name: Test Measures
+        run: |
+          [ -d geodetic ] && \
+          [ -d ephemerides ] && \
+          [ -f geodetic/IERSpredict2000/table.dat ]
+      - name: Create archive
+        run: |
+          zip -r WSRT_Measures.zip geodetic ephemerides
+      - name: Get version number from current date
         id: date
-        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
-      - name: Debug
-        run: ls -al
+        run: echo "::set-output name=date::$(date +'v%Y.%m.%d')"
       - name: Create Release
+        id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
@@ -27,5 +34,15 @@ jobs:
             Ephemerides and geodetic data for casacore measures (via Astron) as of ${{ steps.date.outputs.date }}
           draft: false
           prerelease: false
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./WSRT_Measures.zip
+          asset_name: WSRT_Measures.zip
+          asset_content_type: application/zip
 
 
