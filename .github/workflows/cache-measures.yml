@@ -1,7 +1,6 @@
-name: Cache Measures Nightly
+name: Cache Measures
 on:
   push:
-    branches: main
   # schedule:
   # - cron: "0 0 * * *"
 jobs:
