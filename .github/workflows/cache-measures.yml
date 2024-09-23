@@ -1,8 +1,6 @@
 name: Cache Measures
 on:
   push:
-  # schedule:
-  # - cron: "0 0 * * *"
 jobs:
   release:
     runs-on: ubuntu-latest
